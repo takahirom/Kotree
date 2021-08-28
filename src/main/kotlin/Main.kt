@@ -1,33 +1,15 @@
 package com.github.takahirom.compose
 
 import GlobalSnapshotManager
-import android.content.Context
-import android.widget.FrameLayout
-import androidx.compose.runtime.AbstractApplier
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ComposeNode
-import androidx.compose.runtime.Composition
-import androidx.compose.runtime.DefaultMonotonicFrameClock
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Recomposer
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.compose.runtime.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 data class Node(val value: String = "", val children: MutableList<Node>)
 
 @OptIn(InternalCoroutinesApi::class)
-fun runApp(context: Context): FrameLayout {
+fun runApp() {
     val composer = Recomposer(Dispatchers.Main)
 
     GlobalSnapshotManager.ensureStarted()
@@ -43,7 +25,6 @@ fun runApp(context: Context): FrameLayout {
         }
     }
 
-    val rootDocument = FrameLayout(context)
     val node = Node("root", mutableListOf())
     Composition(TextApplier(node), composer).apply {
         setContent {
@@ -61,7 +42,20 @@ fun runApp(context: Context): FrameLayout {
             delay(100)
         }
     }
-    return rootDocument
+}
+
+@Composable
+fun Content() {
+    var state by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit){
+        while(true){
+            state = !state
+            delay(3000)
+        }
+    }
+    if(state) {
+        Node()
+    }
 }
 
 @Composable
