@@ -1,0 +1,83 @@
+buildscript {
+  repositories {
+    // TODO: remove after new build is published
+    mavenLocal().mavenContent {
+      includeModule("org.jetbrains.compose", "compose-gradle-plugin")
+    }
+    google()
+    jcenter()
+    maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
+    maven {
+      url 'https://jitpack.io'
+    }
+  }
+
+  dependencies {
+    // __LATEST_COMPOSE_RELEASE_VERSION__
+    classpath("org.jetbrains.compose:compose-gradle-plugin:1.0.0-alpha4-build321")
+    classpath("com.android.tools.build:gradle:4.0.2")
+    // __KOTLIN_COMPOSE_VERSION__
+    classpath(group: 'org.jetbrains.kotlin', name: 'kotlin-gradle-plugin', version: '1.5.21')
+    classpath 'com.github.takahirom:decomposer:main-SNAPSHOT'
+  }
+}
+plugins {
+  id 'org.jetbrains.kotlin.multiplatform' version '1.5.21'
+}
+apply plugin:"com.android.application"
+apply plugin:"org.jetbrains.compose"
+apply plugin: 'com.github.takahirom.decomposer'
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+  jcenter()
+  google()
+  maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
+}
+
+android {
+  compileSdkVersion 29
+
+  defaultConfig {
+    applicationId "com.github.takahirom.compose"
+    minSdkVersion 21
+    targetSdkVersion 29
+
+    versionCode 1
+    versionName "1.0.0"
+  }
+  compileOptions {
+    sourceCompatibility 1.8
+    targetCompatibility 1.8
+  }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+  kotlinOptions {
+    jvmTarget = "1.8"
+  }
+}
+
+kotlin {
+  jvm()
+  android()
+
+  sourceSets {
+    commonMain {
+      dependencies {
+        implementation kotlin('stdlib-common')
+        implementation compose.runtime
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
+      }
+    }
+    commonTest {
+      dependencies {
+        implementation kotlin('test-common')
+        implementation kotlin('test-annotations-common')
+      }
+    }
+  }
+}
