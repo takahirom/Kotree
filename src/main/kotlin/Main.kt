@@ -49,7 +49,6 @@ sealed class Node {
     data class Node2(
         val value: String = "",
     ) : Node()
-
 }
 
 @OptIn(InternalCoroutinesApi::class)
@@ -134,15 +133,15 @@ class NodeApplier(node: Node) : AbstractApplier<Node>(node) {
     }
 
     override fun insertBottomUp(index: Int, instance: Node) {
-        current.children.add(index, instance)
+        // use top down
     }
 
     override fun insertTopDown(index: Int, instance: Node) {
+        current.children.add(index, instance)
     }
 
     override fun move(from: Int, to: Int, count: Int) {
-        // NOT Supported
-        TODO()
+        current.children.move(from, to, count)
     }
 
     override fun remove(index: Int, count: Int) {
