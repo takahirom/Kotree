@@ -4,9 +4,13 @@ import GlobalSnapshotManager
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
+import launchComposeInsideLogger
 
 
-data class Node(val value: String = "", val children: MutableList<Node>)
+sealed class Node(open val value: String = "", open val children: MutableList<Node>) {
+    data class Node1(override val value: String = "", override val children: MutableList<Node>) : Node(value, children)
+    data class Node2(override val value: String = "", override val children: MutableList<Node>) : Node(value, children)
+}
 
 @OptIn(InternalCoroutinesApi::class)
 fun runApp() {
@@ -25,12 +29,21 @@ fun runApp() {
         }
     }
 
-    val node = Node("root", mutableListOf())
-    Composition(TextApplier(node), composer).apply {
+    val rootNode = Node.Node1("root", mutableListOf())
+    Composition(NodeApplier(rootNode), composer).apply {
         setContent {
-            Node()
+            Content()
         }
+        launchNodeLogger(mainScope, rootNode)
+//        launchComposeInsideLogger(mainScope)
     }
+
+}
+
+private fun launchNodeLogger(
+    mainScope: CoroutineScope,
+    node: Node.Node1
+) {
     mainScope.launch {
         var nodeString = ""
         while (true) {
@@ -39,40 +52,48 @@ fun runApp() {
                 nodeString = newNodeString
                 println(nodeString)
             }
-            delay(100)
+            yield()
         }
     }
 }
 
 @Composable
 fun Content() {
-    var state by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit){
-        while(true){
-            state = !state
-            delay(3000)
-        }
+    var state by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(12000)
+        state = false
     }
-    if(state) {
-        Node()
+    if (state) {
+        Node1()
     }
+    Node2()
 }
 
 @Composable
-private fun Node() {
-    ComposeNode<Node, TextApplier>(
+private fun Node1() {
+    ReusableComposeNode<Node, NodeApplier>(
         factory = {
-            Node("hello world", mutableListOf())
+            Node.Node1("node1", mutableListOf())
         },
         update = {
-//            set(text) {
-//                this.value = text
-//            }
         },
     )
 }
 
-class TextApplier(node: Node) : AbstractApplier<Node>(node) {
+@Composable
+private fun Node2() {
+    ReusableComposeNode<Node, NodeApplier>(
+        factory = {
+            Node.Node2("node2", mutableListOf())
+        },
+        update = {
+        },
+    )
+}
+
+
+class NodeApplier(node: Node) : AbstractApplier<Node>(node) {
     override fun onClear() {
         current.children.clear()
     }
