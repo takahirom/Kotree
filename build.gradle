@@ -24,7 +24,7 @@ buildscript {
 plugins {
   id 'org.jetbrains.kotlin.multiplatform' version '1.5.30'
 }
-apply plugin:"com.android.application"
+apply plugin:"application"
 apply plugin:"org.jetbrains.compose"
 apply plugin: 'com.github.takahirom.decomposer'
 
@@ -38,38 +38,18 @@ repositories {
   maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
 }
 
-android {
-  compileSdkVersion 29
-
-  defaultConfig {
-    applicationId "com.github.takahirom.compose"
-    minSdkVersion 21
-    targetSdkVersion 29
-
-    versionCode 1
-    versionName "1.0.0"
-  }
-  buildTypes {
-    getByName("release"){
-      signingConfig = signingConfigs.getByName("debug")
-      debuggable = true
-    }
-  }
-  compileOptions {
-    sourceCompatibility 1.8
-    targetCompatibility 1.8
-  }
-}
-
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   kotlinOptions {
     jvmTarget = "1.8"
   }
 }
 
+application {
+  mainClassName = "com.github.takahirom.compose.MainKt"
+}
+
 kotlin {
   jvm()
-  android()
 
   sourceSets {
     commonMain {
