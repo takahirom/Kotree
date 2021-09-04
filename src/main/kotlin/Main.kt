@@ -18,10 +18,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import launchComposeInsideLogger
 
 
 sealed class Node {
@@ -63,11 +63,6 @@ fun runApp() {
             composer.runRecomposeAndApplyChanges()
         }
     }
-    mainScope.launch {
-        composer.state.collect {
-            println("composer:$it")
-        }
-    }
 
     val rootNode = Node.RootNode()
     Composition(NodeApplier(rootNode), composer).apply {
@@ -75,7 +70,7 @@ fun runApp() {
             Content()
         }
         launchNodeLogger(mainScope, rootNode)
-//        launchComposeInsideLogger(mainScope)
+        launchComposeInsideLogger(composer, mainScope)
     }
 
 }

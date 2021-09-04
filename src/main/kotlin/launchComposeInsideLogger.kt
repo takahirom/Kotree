@@ -1,9 +1,16 @@
 import androidx.compose.runtime.Composition
+import androidx.compose.runtime.Recomposer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
-fun Composition.launchComposeInsideLogger(mainScope: CoroutineScope) {
+fun Composition.launchComposeInsideLogger(composer: Recomposer, mainScope: CoroutineScope) {
+    mainScope.launch {
+        composer.state.collect {
+            println("composer:$it")
+        }
+    }
     val slotTable = Class.forName("androidx.compose.runtime.CompositionImpl")
         .getDeclaredField("slotTable")
         .apply {
