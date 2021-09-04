@@ -1,15 +1,55 @@
 package com.github.takahirom.compose
 
 import GlobalSnapshotManager
-import androidx.compose.runtime.*
-import kotlinx.coroutines.*
+import androidx.compose.runtime.AbstractApplier
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composition
+import androidx.compose.runtime.DefaultMonotonicFrameClock
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.ReusableComposeNode
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
-import launchComposeInsideLogger
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 
-sealed class Node(open val value: String = "", open val children: MutableList<Node>) {
-    data class Node1(override val value: String = "", override val children: MutableList<Node>) : Node(value, children)
-    data class Node2(override val value: String = "", override val children: MutableList<Node>) : Node(value, children)
+sealed class Node {
+    val children = mutableListOf<Node>()
+
+    class RootNode : Node() {
+        override fun toString(): String {
+            return buildString {
+                appendLine("RootNode")
+                children.forEachIndexed { index, node ->
+                    if (index == children.lastIndex) {
+                        appendLine("└── $node")
+                    } else {
+                        appendLine("├── $node")
+                    }
+                }
+            }
+        }
+    }
+
+    data class Node1(
+        val value: String = "",
+    ) : Node()
+
+    data class Node2(
+        val value: String = "",
+    ) : Node()
+
 }
 
 @OptIn(InternalCoroutinesApi::class)
@@ -29,7 +69,7 @@ fun runApp() {
         }
     }
 
-    val rootNode = Node.Node1("root", mutableListOf())
+    val rootNode = Node.RootNode()
     Composition(NodeApplier(rootNode), composer).apply {
         setContent {
             Content()
@@ -42,7 +82,7 @@ fun runApp() {
 
 private fun launchNodeLogger(
     mainScope: CoroutineScope,
-    node: Node.Node1
+    node: Node.RootNode
 ) {
     mainScope.launch {
         var nodeString = ""
@@ -74,7 +114,7 @@ fun Content() {
 private fun Node1() {
     ReusableComposeNode<Node, NodeApplier>(
         factory = {
-            Node.Node1("node1", mutableListOf())
+            Node.Node1("node1")
         },
         update = {
         },
@@ -85,7 +125,7 @@ private fun Node1() {
 private fun Node2() {
     ReusableComposeNode<Node, NodeApplier>(
         factory = {
-            Node.Node2("node2", mutableListOf())
+            Node.Node2("node2")
         },
         update = {
         },
