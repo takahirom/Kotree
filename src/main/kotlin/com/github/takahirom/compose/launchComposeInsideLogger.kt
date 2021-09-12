@@ -1,6 +1,9 @@
+package com.github.takahirom.compose
+
 import androidx.compose.runtime.Composition
 import androidx.compose.runtime.Recomposer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -17,7 +20,7 @@ fun Composition.launchComposeInsideLogger(composer: Recomposer, mainScope: Corou
             isAccessible = true
         }
         .get(this)
-    mainScope.launch {
+    GlobalScope.launch {
         var lastSlotTableString = ""
         while (true) {
             val slotTableString = Class.forName("androidx.compose.runtime.SlotTable")

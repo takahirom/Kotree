@@ -1,3 +1,5 @@
+package com.github.takahirom.compose
+
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.snapshots.ObserverHandle
 import androidx.compose.runtime.snapshots.Snapshot

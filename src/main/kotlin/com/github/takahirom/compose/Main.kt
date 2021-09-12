@@ -1,10 +1,8 @@
 package com.github.takahirom.compose
 
-import GlobalSnapshotManager
 import androidx.compose.runtime.AbstractApplier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Composition
-import androidx.compose.runtime.DefaultMonotonicFrameClock
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.ReusableComposeNode
@@ -13,15 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
-import launchComposeInsideLogger
 
 
 sealed class Node {
@@ -29,27 +24,19 @@ sealed class Node {
 
     class RootNode : Node() {
         override fun toString(): String {
-            return buildString {
-                appendLine("RootNode")
-                children.forEachIndexed { index, node ->
-                    if (index == children.lastIndex) {
-                        appendLine("└── $node")
-                    } else {
-                        appendLine("├── $node")
-                    }
-                }
-            }
+            return rootNodeToString()
         }
     }
 
     data class Node1(
-        val value: String = "",
+        var name: String = "",
     ) : Node()
 
     data class Node2(
-        val value: String = "",
+        var name: String = "",
     ) : Node()
 }
+
 
 @OptIn(InternalCoroutinesApi::class)
 fun runApp() {
@@ -57,10 +44,8 @@ fun runApp() {
 
     GlobalSnapshotManager.ensureStarted()
     val mainScope = MainScope()
-    mainScope.launch(start = CoroutineStart.UNDISPATCHED) {
-        withContext(coroutineContext + DefaultMonotonicFrameClock) {
-            composer.runRecomposeAndApplyChanges()
-        }
+    mainScope.launch(DefaultChoreographerFrameClock) {
+        composer.runRecomposeAndApplyChanges()
     }
 
     val rootNode = Node.RootNode()
@@ -95,7 +80,7 @@ private fun launchNodeLogger(
 fun Content() {
     var state by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        delay(12000)
+        delay(10000)
         state = false
     }
     if (state) {
@@ -105,23 +90,25 @@ fun Content() {
 }
 
 @Composable
-private fun Node1() {
-    ReusableComposeNode<Node, NodeApplier>(
+private fun Node1(name: String = "node1") {
+    ReusableComposeNode<Node.Node1, NodeApplier>(
         factory = {
-            Node.Node1("node1")
+            Node.Node1()
         },
         update = {
+            set(name) { this.name = it }
         },
     )
 }
 
 @Composable
-private fun Node2() {
-    ReusableComposeNode<Node, NodeApplier>(
+private fun Node2(name: String = "node2") {
+    ReusableComposeNode<Node.Node2, NodeApplier>(
         factory = {
-            Node.Node2("node2")
+            Node.Node2()
         },
         update = {
+            set(name) { this.name = it }
         },
     )
 }
