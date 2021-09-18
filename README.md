@@ -1,6 +1,6 @@
 # Kotree
 
-Visualize text graph by Jetpack Compose
+A simple tool to display a text tree with Jetpack Compose.
 
 ```text
 root
