@@ -15,7 +15,7 @@ root
     └── h
 ```
 
-```
+```kotlin
 @Composable
 private fun Content() {
     Node("root") {
