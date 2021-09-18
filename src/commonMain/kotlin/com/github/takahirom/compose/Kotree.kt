@@ -17,41 +17,44 @@ sealed class Node {
 
     class RootNode : Node() {
         override fun toString(): String {
-            return rootNodeToString()
+            return nodeToString()
         }
     }
 
     data class TreeNode(
         var name: String = "",
-    ) : Node()
+    ) : Node() {
+        override fun toString(): String {
+            return name
+        }
+    }
 }
 
-
 @OptIn(InternalCoroutinesApi::class)
-fun runApp() {
+fun kotree(content: @Composable () -> Unit) = runBlocking {
     val composer = Recomposer(Dispatchers.Main)
 
     GlobalSnapshotManager.ensureStarted()
     val mainScope = MainScope()
-    mainScope.launch(DefaultChoreographerFrameClock) {
+    mainScope.launch(YieldFrameClock) {
         composer.runRecomposeAndApplyChanges()
     }
 
     val rootNode = Node.RootNode()
     Composition(NodeApplier(rootNode), composer).apply {
-        setContent {
-            Content()
-        }
-        launchNodeLogger(mainScope, rootNode)
-        launchComposeInsideLogger(composer, mainScope)
+        setContent(content)
+//        launchNodeLogger(mainScope, rootNode)
+//        launchComposeInsideLogger(composer, mainScope)
     }
+    composer.awaitIdle()
+    rootNode.nodeToString()
 }
 
 private fun launchNodeLogger(
     mainScope: CoroutineScope,
     node: Node.RootNode
 ) {
-    mainScope.launch {
+    mainScope.launch(Dispatchers.Default) {
         var nodeString = ""
         while (true) {
             val newNodeString = node.toString()
@@ -64,18 +67,9 @@ private fun launchNodeLogger(
     }
 }
 
-@Composable
-fun Content() {
-    Node("root") {
-        Node("a") {
-        }
-        Node("b") {
-        }
-    }
-}
 
 @Composable
-private fun Node(name: String = "no name", content: @Composable () -> Unit = {}) {
+fun Node(name: String = "no name", content: @Composable () -> Unit = {}) {
     ReusableComposeNode<Node.TreeNode, NodeApplier>(
         factory = {
             Node.TreeNode()

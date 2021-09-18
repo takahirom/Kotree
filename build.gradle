@@ -24,7 +24,6 @@ buildscript {
 plugins {
   id 'org.jetbrains.kotlin.multiplatform' version '1.5.30'
 }
-apply plugin:"application"
 apply plugin:"org.jetbrains.compose"
 apply plugin: 'com.github.takahirom.decomposer'
 
@@ -44,12 +43,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
   }
 }
 
-application {
-  mainClassName = "com.github.takahirom.compose.MainKt"
-}
-
 kotlin {
-  jvm()
+  jvm {
+    withJava()
+  }
 
   sourceSets {
     commonMain {
@@ -63,6 +60,18 @@ kotlin {
       dependencies {
         implementation kotlin('test-common')
         implementation kotlin('test-annotations-common')
+      }
+    }
+    jvmMain {
+      dependencies {
+        dependsOn commonMain
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.5.0"
+      }
+    }
+    jvmTest {
+      dependencies {
+        implementation kotlin('test')
+        implementation kotlin('test-junit')
       }
     }
   }
