@@ -16,6 +16,14 @@ root
 ```
 
 ```kotlin
+fun main() {
+    println(
+        kotree {
+            Content()
+        }
+    )
+}
+        
 @Composable
 private fun Content() {
     Node("root") {
