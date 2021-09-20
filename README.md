@@ -44,3 +44,26 @@ private fun Content() {
 }
 ```
 
+
+Not only can you draw the tree manually, but you can also visualize the structure.
+
+```kotlin
+sampleproject
+├── src
+│   └── commonMain
+│       └── kotlin
+├── build.gradle.kts
+└── settings.gradle.kts
+```
+
+
+```kotlin
+@Composable
+private fun FileNode(file: File) {
+    Node(file.name) {
+        file.listFiles().forEach {
+            FileNode(it)
+        }
+    }
+}
+```
